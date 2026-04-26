@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Narzędzi — Vibecoding Stack</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0d0d0d;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #e8e8e8;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  #header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 18px 32px;
+    background: rgba(13,13,13,.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 100;
+  }
+
+  #header h1 {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  #header p {
+    font-size: 12px;
+    color: rgba(255,255,255,.35);
+    letter-spacing: .05em;
+  }
+
+  #legend {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    color: rgba(255,255,255,.45);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  #svg-container {
+    width: 100vw;
+    height: 100vh;
+    padding-top: 60px;
+  }
+
+  svg { width: 100%; height: 100%; }
+
+  .node circle {
+    stroke-width: 2;
+    cursor: pointer;
+    transition: r .15s;
+  }
+
+  .node:hover circle { filter: brightness(1.3); }
+
+  .node text {
+    font-size: 11px;
+    fill: rgba(255,255,255,.75);
+    text-anchor: middle;
+    pointer-events: none;
+    font-family: 'Inter', system-ui, sans-serif;
+    letter-spacing: .04em;
+  }
+
+  .node text.label-main {
+    font-size: 12px;
+    fill: #fff;
+    font-weight: 500;
+  }
+
+  .link {
+    stroke: rgba(255,255,255,.08);
+    stroke-width: 1.5;
+    fill: none;
+  }
+
+  .link.active {
+    stroke: rgba(255,255,255,.3);
+  }
+
+  #tooltip {
+    position: fixed;
+    background: rgba(18,18,18,.97);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px;
+    padding: 18px 22px;
+    max-width: 320px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .15s;
+    z-index: 200;
+    box-shadow: 0 8px 40px rgba(0,0,0,.6);
+  }
+
+  #tooltip.visible { opacity: 1; }
+
+  #tooltip .tt-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  #tooltip .tt-category {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-bottom: 12px;
+    opacity: .5;
+  }
+
+  #tooltip .tt-desc {
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(255,255,255,.7);
+    margin-bottom: 12px;
+  }
+
+  #tooltip .tt-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    padding: 4px 0;
+    border-top: 1px solid rgba(255,255,255,.06);
+    color: rgba(255,255,255,.5);
+  }
+
+  #tooltip .tt-row span:last-child {
+    color: rgba(255,255,255,.85);
+    font-weight: 500;
+  }
+
+  #tooltip .tt-plan-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .06em;
+  }
+
+  .plan-free { background: rgba(74,222,128,.15); color: #4ade80; }
+  .plan-paid { background: rgba(251,146,60,.15); color: #fb923c; }
+  .plan-limit { background: rgba(248,113,113,.15); color: #f87171; }
+  .plan-na { background: rgba(148,163,184,.1); color: #94a3b8; }
+
+  #hint {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: rgba(255,255,255,.2);
+    letter-spacing: .06em;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <h1>Vibecoding Stack</h1>
+    <p>Mapa narzędzi i przepływu informacji</p>
+  </div>
+  <div id="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>AI</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Wersjonowanie</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>Deploy</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>System</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f472b6"></div>Protokół</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Projekty</div>
+  </div>
+</div>
+
+<div id="svg-container">
+  <svg id="graph"></svg>
+</div>
+
+<div id="tooltip">
+  <div class="tt-name" id="tt-name"></div>
+  <div class="tt-category" id="tt-category"></div>
+  <div class="tt-desc" id="tt-desc"></div>
+  <div class="tt-row"><span>Funkcja</span><span id="tt-func"></span></div>
+  <div class="tt-row" style="margin-top:4px"><span>Plan</span><span id="tt-plan"></span></div>
+</div>
+
+<div id="hint">Przeciągnij węzły · Najedź aby zobaczyć szczegóły</div>
+
+<script>
+const COLORS = {
+  ai: '#fb923c',
+  vcs: '#60a5fa',
+  deploy: '#4ade80',
+  system: '#a78bfa',
+  protocol: '#f472b6',
+  project: '#fbbf24',
+};
+
+const CATEGORY_LABELS = {
+  ai: 'Sztuczna Inteligencja',
+  vcs: 'Wersjonowanie kodu',
+  deploy: 'Deployment',
+  system: 'System / Runtime',
+  protocol: 'Protokół integracji',
+  project: 'Projekty',
+};
+
+const nodes = [
+  // AI
+  {
+    id: 'claude-code', label: 'Claude Code', category: 'ai', plan: 'paid', radius: 36,
+    desc: 'Główny agent AI do kodowania (CLI). Tu Mikołaj wpisuje intencję, Claude buduje kod. Centrum całego stacku.',
+    func: 'Kodowanie, debug, deploy, planowanie',
+  },
+  {
+    id: 'claude', label: 'Claude', category: 'ai', plan: 'paid', radius: 28,
+    desc: 'Model językowy AI od Anthropic (claude-sonnet-4-6). Mózg za Claude Code — przetwarza kontekst i generuje rozwiązania.',
+    func: 'Generowanie kodu, analiza, decyzje',
+  },
+  {
+    id: 'windsurf', label: 'Windsurf\n/ Cascade', category: 'ai', plan: 'free-paid', radius: 24,
+    desc: 'IDE z wbudowanym AI (Cascade). Edytor kodu z podpowiedziami w czasie rzeczywistym — alternatywa dla VS Code.',
+    func: 'Edycja kodu, podgląd zmian, terminal',
+  },
+
+  // VCS
+  {
+    id: 'git', label: 'Git', category: 'vcs', plan: 'free', radius: 26,
+    desc: 'System kontroli wersji. Śledzi historię zmian — każdy commit to snapshot projektu. Działa lokalnie.',
+    func: 'Commity, branche, historia zmian',
+  },
+  {
+    id: 'github', label: 'GitHub', category: 'vcs', plan: 'free', radius: 28,
+    desc: 'Hosting repozytoriów git w chmurze. Kopia zapasowa kodu + synchronizacja między urządzeniami.',
+    func: 'Zdalne repo, backup, współpraca',
+  },
+  {
+    id: 'github-desktop', label: 'GitHub\nDesktop', category: 'vcs', plan: 'free', radius: 20,
+    desc: 'Graficzny interfejs do git. Pozwala widzieć repozytoria i zmiany bez terminala.',
+    func: 'Wizualne zarządzanie repo',
+  },
+  {
+    id: 'github-cli', label: 'GitHub CLI\n(gh)', category: 'vcs', plan: 'free', radius: 20,
+    desc: 'Narzędzie terminalowe do GitHub. Claude używa go do tworzenia repozytoriów i autoryzacji.',
+    func: 'Tworzenie repo, autoryzacja, PR-y',
+  },
+
+  // Deploy
+  {
+    id: 'vercel', label: 'Vercel', category: 'deploy', plan: 'free', radius: 28,
+    desc: 'Aktualna platforma deploymentu. Hostuje Wirtualnego Kota na wirtualny-kot.vercel.app. Plan Hobby (free).',
+    func: 'Hosting, routing, SSL, CI/CD',
+  },
+  {
+    id: 'vercel-cli', label: 'Vercel CLI', category: 'deploy', plan: 'free', radius: 20,
+    desc: 'Narzędzie terminalowe do deploymentu. `vercel --prod --yes` wysyła kod na produkcję w kilka sekund.',
+    func: 'Deploy z terminala, preview, logi',
+  },
+  {
+    id: 'netlify', label: 'Netlify', category: 'deploy', plan: 'limit', radius: 20,
+    desc: 'Poprzednia platforma deploymentu. Limit darmowego planu wyczerpany — zastąpiona przez Vercel (2026-04-26).',
+    func: 'Hosting (nieaktywny)',
+  },
+
+  // System
+  {
+    id: 'bash', label: 'Bash\n/ Terminal', category: 'system', plan: 'free', radius: 22,
+    desc: 'Powłoka systemowa. Wszystkie komendy — git, vercel, gh, npm — wykonują się tutaj.',
+    func: 'Wykonywanie komend, skrypty',
+  },
+  {
+    id: 'nodejs', label: 'Node.js', category: 'system', plan: 'free', radius: 18,
+    desc: 'Środowisko uruchomieniowe JavaScript. Wymagane przez Vercel CLI i inne narzędzia npm.',
+    func: 'Runtime dla narzędzi CLI',
+  },
+  {
+    id: 'npm', label: 'npm', category: 'system', plan: 'free', radius: 18,
+    desc: 'Menedżer pakietów Node.js. Instaluje narzędzia globalne: `npm install -g vercel`.',
+    func: 'Instalacja pakietów CLI',
+  },
+  {
+    id: 'chrome', label: 'Chrome', category: 'system', plan: 'free', radius: 18,
+    desc: 'Przeglądarka testowa. Claude otwiera każdą nową wersję po deployu: `start chrome <url>?reset`.',
+    func: 'Testowanie wdrożonych wersji',
+  },
+
+  // Protocol
+  {
+    id: 'mcp', label: 'MCP', category: 'protocol', plan: 'free', radius: 22,
+    desc: 'Model Context Protocol — standard Anthropic do integracji zewnętrznych narzędzi z Claude. Używany m.in. przez wtyczki Vercel i Netlify.',
+    func: 'Integracja Claude z zewnętrznymi API',
+  },
+
+  // Projects
+  {
+    id: 'wirtualny-kot', label: 'Wirtualny Kot', category: 'project', plan: 'na', radius: 22,
+    desc: 'Interaktywna aplikacja webowa — wirtualny kot do głaskania z kocioterapią. Deployed na Vercel. Główny projekt sesji.',
+    func: 'wirtualny-kot.vercel.app',
+  },
+  {
+    id: 'airport-map', label: 'Airport Map', category: 'project', plan: 'na', radius: 20,
+    desc: 'Mapa 40+ lotnisk świata z kalkulatorem odległości great-circle, filtrem A380 i pulsującą granicą Polski.',
+    func: 'github.com/banamicobo/airport-map',
+  },
+  {
+    id: 'personal-website', label: 'Personal\nWebsite', category: 'project', plan: 'na', radius: 20,
+    desc: 'Strona osobista Mikołaja — w trakcie budowy. Black & white design, portfolio Kaizen / flow efficiency.',
+    func: 'github.com/banamicobo/personal-website',
+  },
+];
+
+const links = [
+  // Claude Code jako centrum
+  { source: 'claude-code', target: 'claude', label: 'zasila' },
+  { source: 'claude-code', target: 'bash', label: 'wykonuje komendy' },
+  { source: 'claude-code', target: 'git', label: 'commituje' },
+  { source: 'claude-code', target: 'github-cli', label: 'tworzy repo' },
+  { source: 'claude-code', target: 'vercel-cli', label: 'deployuje' },
+  { source: 'claude-code', target: 'mcp', label: 'używa protokołu' },
+  { source: 'claude-code', target: 'windsurf', label: 'działa w' },
+
+  // VCS chain
+  { source: 'git', target: 'github', label: 'push' },
+  { source: 'github', target: 'github-desktop', label: 'GUI' },
+  { source: 'github', target: 'github-cli', label: 'CLI' },
+  { source: 'github', target: 'vercel', label: 'auto deploy' },
+
+  // Deploy chain
+  { source: 'vercel-cli', target: 'vercel', label: 'prod deploy' },
+  { source: 'mcp', target: 'vercel', label: 'integracja' },
+  { source: 'mcp', target: 'netlify', label: 'integracja' },
+
+  // System chain
+  { source: 'bash', target: 'nodejs', label: 'runtime' },
+  { source: 'nodejs', target: 'npm', label: 'pakiety' },
+  { source: 'npm', target: 'vercel-cli', label: 'instaluje' },
+  { source: 'npm', target: 'github-cli', label: 'instaluje' },
+
+  // Testing
+  { source: 'vercel', target: 'chrome', label: 'otwiera' },
+
+  // Projects
+  { source: 'vercel', target: 'wirtualny-kot', label: 'hostuje' },
+  { source: 'github', target: 'wirtualny-kot', label: 'repo' },
+  { source: 'github', target: 'airport-map', label: 'repo' },
+  { source: 'github', target: 'personal-website', label: 'repo' },
+];
+
+// --- D3 Setup ---
+const svg = d3.select('#graph');
+const container = document.getElementById('svg-container');
+
+let W = container.clientWidth;
+let H = container.clientHeight;
+
+const g = svg.append('g');
+
+// Zoom
+const zoom = d3.zoom()
+  .scaleExtent([0.3, 3])
+  .on('zoom', (e) => g.attr('transform', e.transform));
+svg.call(zoom);
+
+// Simulation
+const sim = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d => d.id).distance(d => {
+    if (d.source.category === 'project' || d.target.category === 'project') return 160;
+    return 120;
+  }).strength(0.4))
+  .force('charge', d3.forceManyBody().strength(-600))
+  .force('center', d3.forceCenter(W / 2, H / 2))
+  .force('collision', d3.forceCollide(d => d.radius + 18));
+
+// Draw links
+const link = g.append('g').selectAll('line')
+  .data(links)
+  .join('line')
+  .attr('class', 'link');
+
+// Draw nodes
+const node = g.append('g').selectAll('g')
+  .data(nodes)
+  .join('g')
+  .attr('class', 'node')
+  .call(d3.drag()
+    .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+    .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on('end', (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+  );
+
+// Circles
+node.append('circle')
+  .attr('r', d => d.radius)
+  .attr('fill', d => COLORS[d.category] + '22')
+  .attr('stroke', d => COLORS[d.category])
+  .attr('stroke-width', d => d.id === 'claude-code' ? 3 : 1.5);
+
+// Labels
+node.each(function(d) {
+  const el = d3.select(this);
+  const lines = d.label.split('\n');
+  if (lines.length === 1) {
+    el.append('text')
+      .attr('class', 'label-main')
+      .attr('dy', '0.35em')
+      .text(d.label);
+  } else {
+    lines.forEach((line, i) => {
+      el.append('text')
+        .attr('class', i === 0 ? 'label-main' : '')
+        .attr('dy', `${(i - (lines.length - 1) / 2) * 1.3}em`)
+        .text(line);
+    });
+  }
+});
+
+// Tooltip
+const tooltip = document.getElementById('tooltip');
+const planClass = { free: 'plan-free', 'free-paid': 'plan-free', paid: 'plan-paid', limit: 'plan-limit', na: 'plan-na' };
+const planLabel = { free: 'Free', 'free-paid': 'Free / Paid', paid: 'Paid', limit: 'Free (limit wyczerpany)', na: '—' };
+
+node.on('mousemove', (e, d) => {
+  document.getElementById('tt-name').textContent = d.label.replace('\n', ' ');
+  document.getElementById('tt-category').textContent = CATEGORY_LABELS[d.category];
+  document.getElementById('tt-desc').textContent = d.desc;
+  document.getElementById('tt-func').textContent = d.func;
+  const planEl = document.getElementById('tt-plan');
+  planEl.innerHTML = `<span class="tt-plan-badge ${planClass[d.plan]}">${planLabel[d.plan]}</span>`;
+
+  const tx = e.clientX + 20;
+  const ty = e.clientY - 20;
+  tooltip.style.left = (tx + 340 > window.innerWidth ? e.clientX - 340 : tx) + 'px';
+  tooltip.style.top = (ty + 200 > window.innerHeight ? e.clientY - 200 : ty) + 'px';
+  tooltip.classList.add('visible');
+}).on('mouseleave', () => {
+  tooltip.classList.remove('visible');
+});
+
+// Tick
+sim.on('tick', () => {
+  link
+    .attr('x1', d => d.source.x)
+    .attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x)
+    .attr('y2', d => d.target.y);
+
+  node.attr('transform', d => `translate(${d.x},${d.y})`);
+});
+
+// Resize
+window.addEventListener('resize', () => {
+  W = container.clientWidth;
+  H = container.clientHeight;
+  sim.force('center', d3.forceCenter(W / 2, H / 2)).alpha(0.3).restart();
+});
+
+// Initial zoom to fit
+setTimeout(() => {
+  svg.transition().duration(800).call(
+    zoom.transform,
+    d3.zoomIdentity.translate(W * 0.05, H * 0.05).scale(0.9)
+  );
+}, 1200);
+</script>
+</body>
+</html>
