@@ -313,6 +313,11 @@ const nodes = [
     desc: 'Przeglądarka testowa. Claude otwiera każdą nową wersję po deployu: `start chrome <url>?reset`.',
     func: 'Testowanie wdrożonych wersji',
   },
+  {
+    id: 'autohotkey', label: 'AutoHotkey', category: 'system', plan: 'free', radius: 20,
+    desc: 'Skrypt automatyzacji UI na Windows. Claude uruchamia windsurf_refresh.ahk żeby odświeżyć explorer Windsurf po zmianie struktury folderów — bez interwencji Mikołaja.',
+    func: 'Mostek Claude ↔ Windsurf UI',
+  },
 
   // Protocol
   {
@@ -348,6 +353,8 @@ const links = [
   { source: 'claude-code', target: 'vercel-cli', label: 'deployuje' },
   { source: 'claude-code', target: 'mcp', label: 'używa protokołu' },
   { source: 'claude-code', target: 'windsurf', label: 'działa w' },
+  { source: 'claude-code', target: 'autohotkey', label: 'uruchamia skrypt' },
+  { source: 'autohotkey', target: 'windsurf', label: 'steruje UI' },
 
   // VCS chain
   { source: 'git', target: 'github', label: 'push' },
