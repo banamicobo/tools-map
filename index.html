@@ -101,11 +101,43 @@
     stroke: rgba(255,255,255,.08);
     stroke-width: 1.5;
     fill: none;
+    pointer-events: none;
   }
 
   .link.active {
     stroke: rgba(255,255,255,.3);
   }
+
+  .link-hit {
+    stroke: transparent;
+    stroke-width: 12;
+    fill: none;
+    cursor: crosshair;
+  }
+
+  .link-hit:hover ~ .link,
+  .link-hit:hover {
+    stroke: rgba(255,255,255,.35);
+  }
+
+  #link-tooltip {
+    position: fixed;
+    background: rgba(18,18,18,.97);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: rgba(255,255,255,.8);
+    max-width: 340px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .12s;
+    z-index: 300;
+    box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    line-height: 1.5;
+  }
+
+  #link-tooltip.visible { opacity: 1; }
 
   #tooltip {
     position: fixed;
@@ -368,49 +400,49 @@ const nodes = [
 
 const links = [
   // Claude Code jako centrum
-  { source: 'claude-code', target: 'claude', label: 'zasila' },
-  { source: 'claude-code', target: 'bash', label: 'wykonuje komendy' },
-  { source: 'claude-code', target: 'git', label: 'commituje' },
-  { source: 'claude-code', target: 'github-cli', label: 'tworzy repo' },
-  { source: 'claude-code', target: 'vercel-cli', label: 'deployuje' },
-  { source: 'claude-code', target: 'mcp', label: 'używa protokołu' },
-  { source: 'claude-code', target: 'windsurf', label: 'działa w' },
-  { source: 'claude-code', target: 'autohotkey', label: 'uruchamia skrypt' },
-  { source: 'autohotkey', target: 'windsurf', label: 'steruje UI' },
+  { source: 'claude-code', target: 'claude', label: 'Zapytania → odpowiedzi modelu językowego (claude-sonnet-4-6)' },
+  { source: 'claude-code', target: 'bash', label: 'Claude wydaje komendy bash — git, npm, vercel, start chrome…' },
+  { source: 'claude-code', target: 'git', label: 'Claude tworzy commity z wiadomością i staguje pliki' },
+  { source: 'claude-code', target: 'github-cli', label: 'Claude tworzy repozytoria i PR-y przez gh CLI' },
+  { source: 'claude-code', target: 'vercel-cli', label: 'Claude wywołuje `vercel --prod --yes` po każdej zmianie' },
+  { source: 'claude-code', target: 'mcp', label: 'Claude łączy się z zewnętrznymi serwisami przez protokół MCP' },
+  { source: 'claude-code', target: 'windsurf', label: 'Claude Code działa jako CLI wewnątrz terminala Windsurf' },
+  { source: 'claude-code', target: 'autohotkey', label: 'Claude uruchamia skrypty AHK do sterowania UI Windsurf' },
+  { source: 'autohotkey', target: 'windsurf', label: 'Skrypt symuluje klawisze/kliknięcia — np. odświeżenie explorera' },
 
   // VCS chain
-  { source: 'git', target: 'github', label: 'push' },
-  { source: 'github', target: 'github-desktop', label: 'GUI' },
-  { source: 'github', target: 'github-cli', label: 'CLI' },
-  { source: 'github', target: 'vercel', label: 'auto deploy' },
+  { source: 'git', target: 'github', label: 'Lokalne commity wysyłane na GitHub przez `git push`' },
+  { source: 'github', target: 'github-desktop', label: 'GitHub Desktop pokazuje historię commitów i diff wizualnie' },
+  { source: 'github', target: 'github-cli', label: 'gh CLI odpytuje i zarządza repozytoriami na GitHubie' },
+  { source: 'github', target: 'vercel', label: 'Push na GitHub wyzwala automatyczny preview deploy na Vercel' },
 
   // Deploy chain
-  { source: 'vercel-cli', target: 'vercel', label: 'prod deploy' },
-  { source: 'mcp', target: 'vercel', label: 'integracja' },
-  { source: 'mcp', target: 'netlify', label: 'integracja' },
+  { source: 'vercel-cli', target: 'vercel', label: 'Ręczny deploy produkcyjny: `vercel --prod --yes`' },
+  { source: 'mcp', target: 'vercel', label: 'MCP Vercel pozwala Claude odpytywać logi i statusy deployów' },
+  { source: 'mcp', target: 'netlify', label: 'MCP Netlify — wcześniej używany do deployu (przed migracją na Vercel)' },
 
   // System chain
-  { source: 'bash', target: 'nodejs', label: 'runtime' },
-  { source: 'nodejs', target: 'npm', label: 'pakiety' },
-  { source: 'npm', target: 'vercel-cli', label: 'instaluje' },
-  { source: 'npm', target: 'github-cli', label: 'instaluje' },
+  { source: 'bash', target: 'nodejs', label: 'Bash uruchamia Node.js jako runtime dla narzędzi CLI' },
+  { source: 'nodejs', target: 'npm', label: 'npm jest managerem pakietów Node.js — instaluje CLi i biblioteki' },
+  { source: 'npm', target: 'vercel-cli', label: '`npm i -g vercel` — globalny deploy CLI' },
+  { source: 'npm', target: 'github-cli', label: '`npm i -g gh` — globalny GitHub CLI' },
 
   // Testing
-  { source: 'vercel', target: 'chrome', label: 'otwiera' },
+  { source: 'vercel', target: 'chrome', label: 'Po każdym deploy Claude otwiera Chrome z nową wersją strony' },
 
   // Auth chain
-  { source: 'supabase', target: 'wirtualny-kot', label: 'auth + db' },
-  { source: 'resend', target: 'supabase', label: 'SMTP' },
-  { source: 'claude-code', target: 'supabase', label: 'konfiguruje' },
-  { source: 'google-cloud', target: 'supabase', label: 'OAuth provider' },
-  { source: 'google-cloud', target: 'wirtualny-kot', label: 'Google Sign-In' },
+  { source: 'supabase', target: 'wirtualny-kot', label: 'Supabase dostarcza auth (magic link, OAuth) i bazę danych PostgreSQL' },
+  { source: 'resend', target: 'supabase', label: 'Resend jest custom SMTP dla Supabase — wysyła magic linki (zamiast limitu 2/h)' },
+  { source: 'claude-code', target: 'supabase', label: 'Claude konfiguruje Supabase przez API i dashboard (URL, klucze, providers)' },
+  { source: 'google-cloud', target: 'supabase', label: 'Google Cloud dostarcza OAuth 2.0 Client ID/Secret do Supabase' },
+  { source: 'google-cloud', target: 'wirtualny-kot', label: 'Google Sign-In — użytkownik loguje się kontem Google do aplikacji' },
 
   // Projects
-  { source: 'vercel', target: 'wirtualny-kot', label: 'hostuje' },
-  { source: 'github', target: 'wirtualny-kot', label: 'repo' },
-  { source: 'github', target: 'airport-map', label: 'repo' },
-  { source: 'github', target: 'personal-website', label: 'repo' },
-  { source: 'github', target: 'tools-map', label: 'repo' },
+  { source: 'vercel', target: 'wirtualny-kot', label: 'Vercel hostuje Wirtualnego Kota na wirtualny-kot.vercel.app' },
+  { source: 'github', target: 'wirtualny-kot', label: 'Kod źródłowy projektu w repo github.com/banamicobo/wirtualny-kot' },
+  { source: 'github', target: 'airport-map', label: 'Kod źródłowy projektu w repo github.com/banamicobo/airport-map' },
+  { source: 'github', target: 'personal-website', label: 'Kod źródłowy projektu w repo github.com/banamicobo/personal-website' },
+  { source: 'github', target: 'tools-map', label: 'Kod źródłowy projektu w repo github.com/banamicobo/tools-map' },
 ];
 
 // --- D3 Setup ---
@@ -439,10 +471,18 @@ const sim = d3.forceSimulation(nodes)
   .force('collision', d3.forceCollide(d => d.radius + 18));
 
 // Draw links
-const link = g.append('g').selectAll('line')
+const linkG = g.append('g');
+
+const link = linkG.selectAll('line.link')
   .data(links)
   .join('line')
   .attr('class', 'link');
+
+// Invisible wide hit area for link hover
+const linkHit = linkG.selectAll('line.link-hit')
+  .data(links)
+  .join('line')
+  .attr('class', 'link-hit');
 
 // Draw nodes
 const node = g.append('g').selectAll('g')
@@ -481,7 +521,23 @@ node.each(function(d) {
   }
 });
 
-// Tooltip
+// Link tooltip
+const linkTooltip = document.createElement('div');
+linkTooltip.id = 'link-tooltip';
+document.body.appendChild(linkTooltip);
+
+linkHit.on('mousemove', (e, d) => {
+  const src = typeof d.source === 'object' ? d.source.label : d.source;
+  const tgt = typeof d.target === 'object' ? d.target.label : d.target;
+  linkTooltip.textContent = d.label;
+  linkTooltip.style.left = (e.clientX + 14) + 'px';
+  linkTooltip.style.top = (e.clientY - 36) + 'px';
+  linkTooltip.classList.add('visible');
+}).on('mouseleave', () => {
+  linkTooltip.classList.remove('visible');
+});
+
+// Node tooltip
 const tooltip = document.getElementById('tooltip');
 const planClass = { free: 'plan-free', 'free-paid': 'plan-free', paid: 'plan-paid', limit: 'plan-limit', na: 'plan-na' };
 const planLabel = { free: 'Free', 'free-paid': 'Free / Paid', paid: 'Paid', limit: 'Free (limit wyczerpany)', na: '—' };
@@ -505,12 +561,14 @@ node.on('mousemove', (e, d) => {
 
 // Tick
 sim.on('tick', () => {
-  link
+  const setLine = sel => sel
     .attr('x1', d => d.source.x)
     .attr('y1', d => d.source.y)
     .attr('x2', d => d.target.x)
     .attr('y2', d => d.target.y);
 
+  setLine(link);
+  setLine(linkHit);
   node.attr('transform', d => `translate(${d.x},${d.y})`);
 });
 
