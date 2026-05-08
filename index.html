@@ -226,7 +226,7 @@
     <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>Deploy</div>
     <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>System</div>
     <div class="legend-item"><div class="legend-dot" style="background:#f472b6"></div>Protokół</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Projekty</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>App</div>
   </div>
 </div>
 
@@ -371,26 +371,11 @@ const nodes = [
     func: 'OAuth 2.0 / Google Sign-In',
   },
 
-  // Projects
+  // App
   {
-    id: 'wirtualny-kot', label: 'Wirtualny Kot', category: 'project', plan: 'na', radius: 22,
-    desc: 'Interaktywna aplikacja webowa — wirtualny kot do głaskania z kocioterapią. Deployed na Vercel. Główny projekt sesji.',
-    func: 'wirtualny-kot.vercel.app',
-  },
-  {
-    id: 'airport-map', label: 'Airport Map', category: 'project', plan: 'na', radius: 20,
-    desc: 'Mapa 40+ lotnisk świata z kalkulatorem odległości great-circle, filtrem A380 i pulsującą granicą Polski.',
-    func: 'github.com/banamicobo/airport-map',
-  },
-  {
-    id: 'personal-website', label: 'Personal\nWebsite', category: 'project', plan: 'na', radius: 20,
-    desc: 'Strona osobista Mikołaja — w trakcie budowy. Black & white design, portfolio Kaizen / flow efficiency.',
-    func: 'github.com/banamicobo/personal-website',
-  },
-  {
-    id: 'tools-map', label: 'Tools Map', category: 'project', plan: 'na', radius: 20,
-    desc: 'Ta mapa — wizualizacja D3.js całego vibecoding stacku. Graf węzłów i połączeń między narzędziami.',
-    func: 'github.com/banamicobo/tools-map',
+    id: 'app', label: 'APP', category: 'project', plan: 'na', radius: 33,
+    desc: 'Aplikacje webowe budowane w ramach vibecoding stacku: Wirtualny Kot, Airport Map, Personal Website, Tools Map. Deployowane na Vercel i Netlify.',
+    func: 'Produkty końcowe Mikołaja',
   },
 ];
 
@@ -427,18 +412,15 @@ const links = [
   { source: 'vercel', target: 'chrome', label: 'Po każdym deploy Claude otwiera Chrome z nową wersją strony' },
 
   // Auth chain
-  { source: 'supabase', target: 'wirtualny-kot', label: 'Supabase dostarcza auth (magic link, OAuth) i bazę danych PostgreSQL' },
+  { source: 'supabase', target: 'app', label: 'Supabase dostarcza auth (magic link, OAuth) i bazę danych PostgreSQL' },
   { source: 'resend', target: 'supabase', label: 'Resend jest custom SMTP dla Supabase — wysyła magic linki (zamiast limitu 2/h)' },
   { source: 'claude-code', target: 'supabase', label: 'Claude konfiguruje Supabase przez API i dashboard (URL, klucze, providers)' },
   { source: 'google-cloud', target: 'supabase', label: 'Google Cloud dostarcza OAuth 2.0 Client ID/Secret do Supabase' },
-  { source: 'google-cloud', target: 'wirtualny-kot', label: 'Google Sign-In — użytkownik loguje się kontem Google do aplikacji' },
+  { source: 'google-cloud', target: 'app', label: 'Google Sign-In — użytkownik loguje się kontem Google do aplikacji' },
 
-  // Projects
-  { source: 'vercel', target: 'wirtualny-kot', label: 'Vercel hostuje Wirtualnego Kota na wirtualny-kot.vercel.app' },
-  { source: 'github', target: 'wirtualny-kot', label: 'Kod źródłowy projektu w repo github.com/banamicobo/wirtualny-kot' },
-  { source: 'github', target: 'airport-map', label: 'Kod źródłowy projektu w repo github.com/banamicobo/airport-map' },
-  { source: 'github', target: 'personal-website', label: 'Kod źródłowy projektu w repo github.com/banamicobo/personal-website' },
-  { source: 'github', target: 'tools-map', label: 'Kod źródłowy projektu w repo github.com/banamicobo/tools-map' },
+  // App
+  { source: 'vercel', target: 'app', label: 'Vercel hostuje aplikacje produkcyjne pod publicznymi URL-ami' },
+  { source: 'github', target: 'app', label: 'Kod źródłowy wszystkich aplikacji przechowywany w repozytoriach GitHub' },
 ];
 
 // --- D3 Setup ---
