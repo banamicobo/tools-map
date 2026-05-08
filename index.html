@@ -326,6 +326,18 @@ const nodes = [
     func: 'Integracja Claude z zewnętrznymi API',
   },
 
+  // Backend / Auth
+  {
+    id: 'supabase', label: 'Supabase', category: 'backend', plan: 'free', radius: 26,
+    desc: 'Backend-as-a-Service: baza danych PostgreSQL + uwierzytelnianie użytkowników (magic link, Google, Facebook, Apple). Używany przez Wirtualnego Kota. Free tier: 50 000 MAU.',
+    func: 'Auth, baza danych, storage',
+  },
+  {
+    id: 'resend', label: 'Resend', category: 'backend', plan: 'free', radius: 20,
+    desc: 'Serwis wysyłki emaili transakcyjnych. Zastępuje domyślny SMTP Supabase (limit 2 maile/godz). Free tier: 3 000 maili/mies. Używany do magic link auth.',
+    func: 'Wysyłka emaili transakcyjnych (magic link)',
+  },
+
   // Projects
   {
     id: 'wirtualny-kot', label: 'Wirtualny Kot', category: 'project', plan: 'na', radius: 22,
@@ -380,6 +392,11 @@ const links = [
 
   // Testing
   { source: 'vercel', target: 'chrome', label: 'otwiera' },
+
+  // Auth chain
+  { source: 'supabase', target: 'wirtualny-kot', label: 'auth + db' },
+  { source: 'resend', target: 'supabase', label: 'SMTP' },
+  { source: 'claude-code', target: 'supabase', label: 'konfiguruje' },
 
   // Projects
   { source: 'vercel', target: 'wirtualny-kot', label: 'hostuje' },
