@@ -115,10 +115,6 @@
     cursor: crosshair;
   }
 
-  .link-hit:hover ~ .link,
-  .link-hit:hover {
-    stroke: rgba(255,255,255,.35);
-  }
 
   #link-tooltip {
     position: fixed;
@@ -527,13 +523,13 @@ linkTooltip.id = 'link-tooltip';
 document.body.appendChild(linkTooltip);
 
 linkHit.on('mousemove', (e, d) => {
-  const src = typeof d.source === 'object' ? d.source.label : d.source;
-  const tgt = typeof d.target === 'object' ? d.target.label : d.target;
+  link.filter(l => l === d).attr('stroke', 'rgba(255,255,255,.35)').attr('stroke-width', 3);
   linkTooltip.textContent = d.label;
   linkTooltip.style.left = (e.clientX + 14) + 'px';
   linkTooltip.style.top = (e.clientY - 36) + 'px';
   linkTooltip.classList.add('visible');
-}).on('mouseleave', () => {
+}).on('mouseleave', (e, d) => {
+  link.filter(l => l === d).attr('stroke', null).attr('stroke-width', null);
   linkTooltip.classList.remove('visible');
 });
 
