@@ -337,6 +337,11 @@ const nodes = [
     desc: 'Serwis wysyłki emaili transakcyjnych. Zastępuje domyślny SMTP Supabase (limit 2 maile/godz). Free tier: 3 000 maili/mies. Używany do magic link auth.',
     func: 'Wysyłka emaili transakcyjnych (magic link)',
   },
+  {
+    id: 'google-cloud', label: 'Google\nCloud Console', category: 'backend', plan: 'free', radius: 20,
+    desc: 'Google Cloud Console — zarządzanie OAuth 2.0 (Google Sign-In). Konfiguracja Client ID, Client Secret, authorized redirect URIs. Używany do Google OAuth w Wirtualnym Kocie.',
+    func: 'OAuth 2.0 / Google Sign-In',
+  },
 
   // Projects
   {
@@ -397,6 +402,8 @@ const links = [
   { source: 'supabase', target: 'wirtualny-kot', label: 'auth + db' },
   { source: 'resend', target: 'supabase', label: 'SMTP' },
   { source: 'claude-code', target: 'supabase', label: 'konfiguruje' },
+  { source: 'google-cloud', target: 'supabase', label: 'OAuth provider' },
+  { source: 'google-cloud', target: 'wirtualny-kot', label: 'Google Sign-In' },
 
   // Projects
   { source: 'vercel', target: 'wirtualny-kot', label: 'hostuje' },
