@@ -252,6 +252,8 @@ const COLORS = {
   system: '#a78bfa',
   protocol: '#f472b6',
   project: '#fbbf24',
+  backend: '#34d399',
+  qa: '#e879f9',
 };
 
 const CATEGORY_LABELS = {
@@ -261,6 +263,8 @@ const CATEGORY_LABELS = {
   system: 'System / Runtime',
   protocol: 'Protokół integracji',
   project: 'Projekty',
+  backend: 'Backend / Auth',
+  qa: 'QA / Audyt UX',
 };
 
 const nodes = [
@@ -377,6 +381,23 @@ const nodes = [
     desc: 'Aplikacje webowe budowane w ramach vibecoding stacku: Wirtualny Kot, Airport Map, Personal Website, Tools Map. Deployowane na Vercel i Netlify.',
     func: 'Produkty końcowe Mikołaja',
   },
+
+  // QA / Audit
+  {
+    id: 'ux-auditor', label: 'UX Auditor', category: 'qa', plan: 'free', radius: 24,
+    desc: 'Lokalny skrypt audytujący UX dowolnej strony. Playwright robi screenshoty, Lighthouse mierzy performance/accessibility/SEO, Claude Opus analizuje consumer journey i best practices. Wynik: HTML raport. Użycie: `node audit.js <url>`.',
+    func: 'Automatyczny audyt UX — screenshoty + Lighthouse + Claude',
+  },
+  {
+    id: 'playwright', label: 'Playwright', category: 'qa', plan: 'free', radius: 20,
+    desc: 'Biblioteka do automatyzacji przeglądarki (Microsoft). Używana przez UX Auditor do nawigacji po stronie i robienia screenshotów podstron.',
+    func: 'Browser automation, screenshoty',
+  },
+  {
+    id: 'anthropic-api', label: 'Anthropic\nAPI', category: 'ai', plan: 'paid', radius: 20,
+    desc: 'Bezpośrednie API Anthropic (claude-opus-4-7). Używane przez UX Auditor do analizy screenshotów i generowania raportu UX. Rozliczane per token.',
+    func: 'Multimodalna analiza UX (screenshoty → raport)',
+  },
 ];
 
 const links = [
@@ -421,6 +442,14 @@ const links = [
   // App
   { source: 'vercel', target: 'app', label: 'Vercel hostuje aplikacje produkcyjne pod publicznymi URL-ami' },
   { source: 'github', target: 'app', label: 'Kod źródłowy wszystkich aplikacji przechowywany w repozytoriach GitHub' },
+
+  // UX Auditor chain
+  { source: 'ux-auditor', target: 'playwright', label: 'UX Auditor używa Playwright do nawigacji i screenshotów podstron' },
+  { source: 'ux-auditor', target: 'anthropic-api', label: 'Screenshoty + dane Lighthouse wysyłane do Claude Opus przez API' },
+  { source: 'ux-auditor', target: 'app', label: 'UX Auditor audytuje każdą z naszych aplikacji po podaniu URL' },
+  { source: 'claude-code', target: 'ux-auditor', label: 'Claude Code napisał i uruchamia skrypt audytora: `node audit.js <url>`' },
+  { source: 'anthropic-api', target: 'claude', label: 'Anthropic API korzysta z tego samego modelu Claude (Opus) co Claude Code' },
+  { source: 'nodejs', target: 'ux-auditor', label: 'UX Auditor to skrypt Node.js — wymaga Node.js i npm' },
 ];
 
 // --- D3 Setup ---
